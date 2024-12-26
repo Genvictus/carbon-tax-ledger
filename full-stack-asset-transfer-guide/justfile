@@ -180,7 +180,7 @@ microfab CONTAINER_CLI=container_cli: (microfab-down CONTAINER_CLI)
         "docker" )
             export HOST_GATEWAY_ARG="--add-host host.docker.internal:host-gateway" ;;
         "podman" )
-        export HOST_GATEWAY_ARG="" ;;
+        export HOST_GATEWAY_ARG="--network=host" ;;
     esac
 
     timeout 60s bash -c \
