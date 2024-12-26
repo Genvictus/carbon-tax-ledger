@@ -1,4 +1,4 @@
-module erc1155
+module github.com/hyperledger/fabric-samples/token-erc-20/chaincode-go
 
 go 1.22.0
 
