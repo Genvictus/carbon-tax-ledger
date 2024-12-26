@@ -47,9 +47,10 @@ internal_repo_endpoint  := env_var_or_default("WORKSHOP_INTERNAL_REPO",     "loc
 external_repo_endpoint  := env_var_or_default("WORKSHOP_EXTERNAL_REPO",     "localhost:5000")
 cluster_type    := env_var_or_default("WORKSHOP_CLUSTER_TYPE",       "k8s")
 
+container_cli   := "docker"
 
 # Start a local KIND cluster with nginx, localhost:5000 registry, and *.localho.st alias in kube DNS
-kind: unkind
+kind CONTAINER_CLI=container_cli: (unkind CONTAINER_CLI)
     #!/bin/bash
     set -e -o pipefail
 
@@ -61,14 +62,14 @@ kind: unkind
     kubectl cluster-info &>/dev/null
 
 # Shut down the KIND cluster
-unkind:
+unkind CONTAINER_CLI=container_cli:
     #!/bin/bash
     kind delete cluster --name {{cluster_name}}
 
-    if docker inspect kind-registry &>/dev/null; then
+    if {{CONTAINER_CLI}} inspect kind-registry &>/dev/null; then
         echo "Stopping container registry"
-        docker kill kind-registry
-        docker rm kind-registry
+        {{CONTAINER_CLI}} kill kind-registry
+        {{CONTAINER_CLI}} rm kind-registry
     fi
 
 # Bring up the nginx ingress controller on the target k8s cluster
@@ -129,17 +130,17 @@ test-console:
 ###############################################################################
 
 # Shut down the microfab (uf) instance
-microfab-down:
+microfab-down CONTAINER_CLI=container_cli:
     #!/bin/bash
 
-    if docker inspect microfab &>/dev/null; then
+    if {{CONTAINER_CLI}} --type container inspect microfab &>/dev/null; then
         echo "Removing existing microfab container:"
-        docker kill microfab
+        {{CONTAINER_CLI}} kill microfab
     fi
 
 
 # Start a micro fab instance and create configuration in _cfg/uf
-microfab: microfab-down
+microfab CONTAINER_CLI=container_cli: (microfab-down CONTAINER_CLI)
     #!/bin/bash
     set -e -o pipefail
 
@@ -175,9 +176,16 @@ microfab: microfab-down
     echo
     echo "Stating microfab...."
 
+    case {{CONTAINER_CLI}} in
+        "docker" )
+            export HOST_GATEWAY_ARG="--add-host host.docker.internal:host-gateway" ;;
+        "podman" )
+        export HOST_GATEWAY_ARG="" ;;
+    esac
+
     timeout 60s bash -c \
-        'docker run --name microfab -p 8080:8080 --add-host host.docker.internal:host-gateway --rm -d -e MICROFAB_CONFIG="${MICROFAB_CONFIG}" ghcr.io/hyperledger-labs/microfab:latest \
-        && docker logs -f microfab | grep --max-count=1 "Microfab started"'
+        '{{CONTAINER_CLI}} run --name microfab -p 8080:8080 $HOST_GATEWAY_ARG --rm -d -e MICROFAB_CONFIG="${MICROFAB_CONFIG}" ghcr.io/hyperledger-labs/microfab:latest \
+        && {{CONTAINER_CLI}} logs -f microfab | grep --max-count=1 "Microfab started"'
 
     curl -s http://console.127-0-0-1.nip.io:8080/ak/api/v1/components | weft microfab -w $CFG/_wallets -p $CFG/_gateways -m $CFG/_msp -f
     cat << EOF > $CFG/org1admin.env
@@ -204,7 +212,7 @@ microfab: microfab-down
     echo 'source $WORKSHOP_PATH/_cfg/uf/org1admin.env'
 
 # Creates a chaincode package and install/approve/commit
-debugcc:
+debugcc CONTAINER_CLI:
     #!/bin/bash
     set -e -o pipefail
 
@@ -212,9 +220,16 @@ debugcc:
 
     pushd $CWDIR/contracts/asset-transfer-typescript
 
+    case {{CONTAINER_CLI}} in
+        "docker" )
+            export CHAINCODE_SERVER_ADDRESS=host.docker.internal:9999 ;;
+        "podman" )
+            export CHAINCODE_SERVER_ADDRESS=host.containers.internal:9999 ;;
+    esac
+
     # this is the ip address the peer will use to talk to the CHAINCODE_ID
     # remember this is relative from where the peer is running.
-    export CHAINCODE_SERVER_ADDRESS=host.docker.internal:9999
+    # export CHAINCODE_SERVER_ADDRESS
     export CHAINCODE_ID=$(weft chaincode package caas --path . --label asset-transfer --address ${CHAINCODE_SERVER_ADDRESS} --archive asset-transfer.tgz --quiet)
     export CORE_PEER_LOCALMSPID=org1MSP
     export CORE_PEER_MSPCONFIGPATH=$CFG/_msp/org1/org1admin/msp
@@ -289,7 +304,7 @@ ansible_image   := env_var_or_default("ANSIBLE_IMAGE",      "ghcr.io/hyperledger
 namespace       := env_var_or_default("WORKSHOP_NAMESPACE", "fabricinfra")
 
 # just set up everything with Ansible
-ansible-doit: ansible-review-config ansible-operator ansible-console ansible-network
+ansible-doit CONTAINER_CLI=container_cli: ansible-review-config (ansible-operator CONTAINER_CLI) (ansible-console CONTAINER_CLI) (ansible-network CONTAINER_CLI)
 
 
 # Review the Ansible Blockchain Collection configuration in _cfg/
@@ -329,7 +344,7 @@ ansible-review-config:
     echo ""
 
 # Start the Kubernetes fabric-operator with the Ansible Blockchain Collection
-ansible-ingress:
+ansible-ingress CONTAINER_CLI=container_cli:
     #!/bin/bash
     set -ex -o pipefail
 
@@ -338,7 +353,7 @@ ansible-ingress:
         export EXTRAS=" -e KUBECONFIG=/_cfg/k8s_context.yaml"
     fi
 
-    docker run \
+    {{CONTAINER_CLI}} run \
         --rm \
         -v ${HOME}/.kube/:/home/hlf-user/.kube/ \
         -v ${CWDIR}/_cfg:/_cfg \
@@ -351,7 +366,7 @@ ansible-ingress:
 
 
 # Start the Kubernetes fabric-operator with the Ansible Blockchain Collection
-ansible-operator:
+ansible-operator CONTAINER_CLI=container_cli:
     #!/bin/bash
     set -ex -o pipefail
 
@@ -360,7 +375,7 @@ ansible-operator:
         export EXTRAS=" -e KUBECONFIG=/_cfg/k8s_context.yaml"
     fi
 
-    docker run \
+    {{CONTAINER_CLI}} run \
         --rm \
         -v ${HOME}/.kube/:/home/hlf-user/.kube/ \
         -v ${CWDIR}/_cfg:/_cfg \
@@ -370,7 +385,7 @@ ansible-operator:
             ansible-playbook /playbooks/01-operator-install.yml
 
 # Start the Fabric Operations Console with the Ansible Blockchain Collection
-ansible-console:
+ansible-console CONTAINER_CLI=container_cli:
     #!/bin/bash
     set -ex -o pipefail
 
@@ -379,7 +394,7 @@ ansible-console:
         export EXTRAS=" -e KUBECONFIG=/_cfg/k8s_context.yaml"
     fi
 
-    docker run \
+    {{CONTAINER_CLI}} run \
         --rm \
         -v ${HOME}/.kube/:/home/hlf-user/.kube/ \
         -v $(pwd)/infrastructure/operator_console_playbooks:/playbooks  ${EXTRAS} \
@@ -407,7 +422,7 @@ ansible-auth:
 
 
 # Build a sample Fabric network with the Ansible Blockchain Collection
-ansible-network: ansible-auth
+ansible-network CONTAINER_CLI=container_cli: ansible-auth
     #!/bin/bash
     set -ex -o pipefail
 
@@ -416,7 +431,7 @@ ansible-network: ansible-auth
         export EXTRAS=" -e KUBECONFIG=/_cfg/k8s_context.yaml"
     fi
 
-    docker run \
+    {{CONTAINER_CLI}} run \
         --rm \
         -u $(id -u) \
         -v ${HOME}/.kube/:/home/hlf-user/.kube/ \
@@ -428,7 +443,7 @@ ansible-network: ansible-auth
 
 
 # Bring down the sample network created with the Ansible Blockchain Collection
-ansible-network-down:
+ansible-network-down CONTAINER_CLI=container_cli:
     #!/bin/bash
     set -ex -o pipefail
 
@@ -436,7 +451,7 @@ ansible-network-down:
 
 
 # Build a chaincode package with Ansible Blockchain Collection
-ansible-build-chaincode:
+ansible-build-chaincode CONTAINER_CLI=container_cli:
     #!/bin/bash
     set -ex -o pipefail
     pushd ${CWDIR}/contracts/asset-transfer-typescript
@@ -446,18 +461,18 @@ ansible-build-chaincode:
     else
         export IMAGE_NAME="{{chaincode_name}}"
     fi
-    DOCKER_BUILDKIT=1 docker build -t {{external_repo_endpoint}}/${IMAGE_NAME} . --target k8s
-    docker push {{external_repo_endpoint}}/${IMAGE_NAME}
+    {{CONTAINER_CLI}}_BUILDKIT=1 {{CONTAINER_CLI}} build -t {{external_repo_endpoint}}/${IMAGE_NAME} . --target k8s
+    {{CONTAINER_CLI}} push {{external_repo_endpoint}}/${IMAGE_NAME}
 
     # note the double { } for escaping
-    export IMG_SHA=$(docker inspect --format='{{{{index .RepoDigests 0}}' {{external_repo_endpoint}}/${IMAGE_NAME} | cut -d'@' -f2)
+    export IMG_SHA=$({{CONTAINER_CLI}} inspect --format='{{{{index .RepoDigests 0}}' {{external_repo_endpoint}}/${IMAGE_NAME} | cut -d'@' -f2)
     weft chaincode package k8s --name {{internal_repo_endpoint}}/${IMAGE_NAME} --digest ${IMG_SHA} --label {{chaincode_name}}
     mv {{chaincode_name}}.tgz ${CWDIR}/_cfg
     popd
 
 
 # Deploy a chaincode package with the Ansible Blockchain Collection
-ansible-deploy-chaincode:
+ansible-deploy-chaincode CONTAINER_CLI=container_cli:
     #!/bin/bash
     set -ex -o pipefail
 
@@ -467,7 +482,7 @@ ansible-deploy-chaincode:
     fi
 
     # cp ${CWDIR}/contracts/asset-transfer-typescript/asset-transfer-chaincode-vars.yml ${CWDIR}/_cfg
-    docker run \
+    {{CONTAINER_CLI}} run \
         --rm \
         -u $(id -u) \
         -v ${HOME}/.kube/:/home/hlf-user/.kube/ \
@@ -477,7 +492,7 @@ ansible-deploy-chaincode:
         {{ansible_image}} \
             ansible-playbook /playbooks/19-install-and-approve-chaincode.yml
 
-    docker run \
+    {{CONTAINER_CLI}} run \
         --rm \
         -u $(id -u) \
         -v ${HOME}/.kube/:/home/hlf-user/.kube/ \
@@ -487,7 +502,7 @@ ansible-deploy-chaincode:
         {{ansible_image}} \
             ansible-playbook /playbooks/20-install-and-approve-chaincode.yml
 
-    docker run \
+    {{CONTAINER_CLI}} run \
         --rm \
         -u $(id -u) \
         -v ${HOME}/.kube/:/home/hlf-user/.kube/ \
@@ -498,7 +513,7 @@ ansible-deploy-chaincode:
             ansible-playbook /playbooks/21-commit-chaincode.yml
 
 # Creates a new identity for an application to use
-ansible-ready-application:
+ansible-ready-application CONTAINER_CLI=container_cli:
     #!/bin/bash
     set -ex -o pipefail
 
@@ -507,7 +522,7 @@ ansible-ready-application:
         export EXTRAS=" -e KUBECONFIG=/_cfg/k8s_context.yaml"
     fi
 
-    docker run \
+    {{CONTAINER_CLI}} run \
         --rm \
         -u $(id -u) \
         -v ${HOME}/.kube/:/home/hlf-user/.kube/ \
