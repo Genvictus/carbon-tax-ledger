@@ -1,8 +1,12 @@
 #!/bin/bash
 
+if [ ! -d ./install-fabric.sh ]; then
+    curl -sSLO https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/install-fabric.sh && chmod +x install-fabric.sh
+fi
+
 # Install the client binary
 if [[ ! -d ./bin || ! -d ./builders || ! -d ./config ]]; then
-    ./install-fabric.sh --fabric-version 2.5.10 binary
+    ./install-fabric.sh --fabric-version 2.5.10 binary docker
 fi
 
 # Export the path
