@@ -1,4 +1,4 @@
-module github.com/Genvictus/carbon-tax-ledger/token-erc20/co2-token/chaincode-go
+module github.com/Genvictus/carbon-tax-ledger/token-erc20/carbon-token/chaincode-go
 
 go 1.22.0
 
