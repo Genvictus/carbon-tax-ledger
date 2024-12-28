@@ -40,7 +40,7 @@ func GetCarbonToken(c *fiber.Ctx) error {
 		"success": true,
 		"message": "Info retrieved successfully",
 		"data": fiber.Map{
-			"token": 10,
+			"token": 69,
 		},
 	})
 }

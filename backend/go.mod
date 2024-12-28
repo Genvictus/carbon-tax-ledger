@@ -1,6 +1,6 @@
 module carbon-tax-ledger
 
-go 1.22.0
+go 1.23.0
 
 require (
 	github.com/go-playground/validator/v10 v10.23.0
