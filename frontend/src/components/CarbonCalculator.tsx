@@ -38,7 +38,11 @@ export function CarbonCalculator() {
         setIsLoading(false);
       };
       
-      fetchAll();
+      // Call fetchAll every 5 seconds
+      const interval = setInterval(fetchAll, 5000);
+
+      // Cleanup interval on component unmount
+      return () => clearInterval(interval);
     }, []);
 
   return (
