@@ -64,10 +64,15 @@ export function TopUpModal({ isOpen, onClose, currentBalance }: TopUpModalProps)
 
         <button
           onClick={handleTopUp}
-          className="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
+          disabled={amount <= 0}
+          className={`w-full flex items-center justify-center gap-2 text-white py-3 rounded-lg transition-colors ${
+            amount <= 0
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-green-600 hover:bg-green-700'
+          }`}
         >
           <CreditCard size={20} />
-          <span>Pay {amount} Tokens</span>
+          <span>Top Up {amount} Tokens</span>
         </button>
       </div>
     </div>
