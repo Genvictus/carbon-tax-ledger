@@ -30,7 +30,7 @@ export function WalletBalance() {
   return (
     <>
       <div className="flex items-center gap-4">
-        <PaymentHistory />
+        {/* <PaymentHistory /> */}
         <button
           onClick={() => setIsTopUpModalOpen(true)}
           className="flex items-center gap-1 bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition-colors"

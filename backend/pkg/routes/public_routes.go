@@ -16,7 +16,6 @@ func PublicRoutes(a *fiber.App) {
 
 	route.Get("/carbon", controllers.GetCarbonToken)
 	route.Post("/pay", controllers.PayCarbonTax)
-	route.Get("/history", controllers.GetCarbonPaymentHistory)
 
 	route.Get("/wallet", controllers.GetWalletToken)
 	route.Post("/topup", controllers.MintWalletToken)

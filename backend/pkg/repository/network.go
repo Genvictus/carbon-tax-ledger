@@ -14,7 +14,7 @@ var (
 		"Org2MSP": "peer0.org2.example.com",
 	}
 	ChainCodeName map[string]string = map[string]string{
-		"CT": "co2_token",
-		"WT": "wallet_token",
+		"CT": "carbon_tax_tokens",
+		"WT": "primary_wallet",
 	}
 )
