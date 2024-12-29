@@ -29,6 +29,7 @@ export function PaymentModal({ isOpen, onClose, amount: suggestedAmount, current
   };
 
   const insufficientFunds = currentBalance < amount;
+  const isAmountValid = amount > 0 && amount <= suggestedAmount;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -77,12 +78,18 @@ export function PaymentModal({ isOpen, onClose, amount: suggestedAmount, current
             Insufficient funds. Please top up your wallet or enter a smaller amount.
           </p>
         )}
+        
+        {!isAmountValid && (
+          <p className="text-red-500 mb-4">
+            Please enter a valid amount between 1 and {suggestedAmount} tokens.
+          </p>
+        )}
 
         <button
           onClick={handlePayment}
-          disabled={insufficientFunds || amount <= 0}
+          disabled={insufficientFunds || !isAmountValid}
           className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg transition-colors ${
-            insufficientFunds || amount <= 0
+            insufficientFunds || !isAmountValid
               ? 'bg-gray-400 cursor-not-allowed'
               : 'bg-green-600 hover:bg-green-700'
           } text-white`}
