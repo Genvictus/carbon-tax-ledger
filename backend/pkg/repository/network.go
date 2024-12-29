@@ -1,13 +1,19 @@
 package repository
 
+import (
+	"os"
+
+	_ "github.com/joho/godotenv/autoload" // load .env file automatically
+)
+
 const (
 	ChannelName string = "mychannel"
 )
 
 var (
 	PeerEndpoint map[string]string = map[string]string{
-		"Org1MSP": "localhost:7051",
-		"Org2MSP": "localhost:9051",
+		"Org1MSP": os.Getenv("PEER_ENDPOINT_ORG1MSP"),
+		"Org2MSP": os.Getenv("PEER_ENDPOINT_ORG2MSP"),
 	}
 	GatewayPeer map[string]string = map[string]string{
 		"Org1MSP": "peer0.org1.example.com",
