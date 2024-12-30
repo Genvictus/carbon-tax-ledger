@@ -7,6 +7,7 @@ A transparent and immutable ledger for carbon tax transactions, built with Hyper
 
 ## Installation
 1. Run `./setup.sh` to start the network, smart contract, frontend, backend, and oracle.
+2. Application is available at [http://localhost:5173](http://localhost:5173)
 
 ## Project Report
 The project report can be found [here](https://docs.google.com/document/d/1vhg3dfoV7gdtfgZjkNNq874-r6OuXZxl8e0RltanHxY/edit?usp=sharing).
