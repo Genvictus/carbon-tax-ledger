@@ -1,5 +1,7 @@
 #!/bin/bash
 
+pushd ${PWD}/..
+
 if [ ! -d ./install-fabric.sh ]; then
     curl -sSLO https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/install-fabric.sh && chmod +x install-fabric.sh
 fi
@@ -13,3 +15,5 @@ fi
 export WORKSHOP_PATH=$(pwd)
 export PATH=${WORKSHOP_PATH}/bin:$PATH
 export FABRIC_CFG_PATH=${WORKSHOP_PATH}/config
+
+popd

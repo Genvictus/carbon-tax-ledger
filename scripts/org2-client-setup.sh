@@ -1,4 +1,4 @@
-pushd ${PWD}/test-network
+pushd ${PWD}/../test-network
 
 export PATH=${PWD}/../bin:${PWD}:$PATH
 export FABRIC_CFG_PATH=$PWD/../config/
