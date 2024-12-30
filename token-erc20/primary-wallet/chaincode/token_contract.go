@@ -53,10 +53,6 @@ func (s *SmartContract) Mint(ctx contractapi.TransactionContextInterface, amount
 	err = verifyMinter(ctx, "client is not authorized to mint new tokens")
 	if err != nil {
 		return err
-	} else {
-		if recipient != "" {
-			return errors.New("non-minter account cannot burn accounts except itself")
-		}
 	}
 
 	// Get ID of submitting client identity if empty
