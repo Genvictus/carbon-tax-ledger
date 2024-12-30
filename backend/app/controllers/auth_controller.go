@@ -3,7 +3,9 @@ package controllers
 import (
 	"carbon-tax-ledger/pkg/repository"
 	"fmt"
+	"io"
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/gofiber/fiber/v2"
@@ -15,7 +17,7 @@ func Login(c *fiber.Ctx) error {
 	// Validate required form values
 	mspID := c.FormValue("mspID")
 	if mspID == "" {
-		return handleErrorResponse(c, fiber.StatusBadRequest, "MSP ID is required", fmt.Errorf("missing mspID"))
+		mspID = "Org1MSP"
 	}
 
 	// Ensure the session directory exists
@@ -80,8 +82,35 @@ func Logout(c *fiber.Ctx) error {
 func saveFile(c *fiber.Ctx, fieldName, destPath string) error {
 	file, err := c.FormFile(fieldName)
 	if err != nil {
-		return fmt.Errorf("failed to get %s file: %w", fieldName, err)
+		var defaultFilePath string = repository.TLSCertPath
+		if fieldName == "cert" {
+			defaultFilePath, _ = getFirstFile(repository.CertPath)
+		}
+		if fieldName == "key" {
+			defaultFilePath, _ = getFirstFile(repository.KeyPath)
+		}
+
+		defaultFile, err := os.Open(defaultFilePath)
+		if err != nil {
+			return fmt.Errorf("failed to open default file for %s: %w", fieldName, err)
+		}
+		defer defaultFile.Close()
+
+		// Create the destination file
+		destFile, err := os.Create(destPath)
+		if err != nil {
+			return fmt.Errorf("failed to create destination file for %s: %w", fieldName, err)
+		}
+		defer destFile.Close()
+
+		// Copy the default file to the destination
+		if _, err := io.Copy(destFile, defaultFile); err != nil {
+			return fmt.Errorf("failed to copy default file for %s: %w", fieldName, err)
+		}
+
+		return nil
 	}
+
 	if err := c.SaveFile(file, destPath); err != nil {
 		return fmt.Errorf("failed to save %s file: %w", fieldName, err)
 	}
@@ -106,4 +135,18 @@ func handleErrorResponse(c *fiber.Ctx, status int, message string, err error) er
 		"error":   err.Error(),
 		"data":    nil,
 	})
+}
+
+func getFirstFile(dirPath string) (string, error) {
+	dir, err := os.Open(dirPath)
+	if err != nil {
+		return "", err
+	}
+
+	fileNames, err := dir.Readdirnames(1)
+	if err != nil {
+		return "", err
+	}
+
+	return path.Join(dirPath, fileNames[0]), nil
 }

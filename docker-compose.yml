@@ -15,6 +15,8 @@ services:
     environment:
       - PEER_ENDPOINT_ORG1MSP=host.docker.internal:7051
       - PEER_ENDPOINT_ORG2MSP=host.docker.internal:9051
+    volumes:
+      - ./test-network:/test-network
 
   oracle:
     build: ./oracle

@@ -37,7 +37,7 @@ export function LoginModal({ isOpen }: LoginModalProps) {
           {/* MSP ID */}
           <div>
             <label htmlFor="mspID" className="block text-sm font-medium text-gray-700 mb-1">
-              MSP ID
+              MSP ID (Optional)
             </label>
             <input
               id="mspID"
@@ -46,49 +46,45 @@ export function LoginModal({ isOpen }: LoginModalProps) {
               onChange={(e) => setMspID(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               placeholder="Enter your MSP ID"
-              required
             />
           </div>
 
           {/* Certificate File */}
           <div>
             <label htmlFor="cert" className="block text-sm font-medium text-gray-700 mb-1">
-              Certificate (Cert)
+              Certificate (Optional)
             </label>
             <input
               id="cert"
               type="file"
               onChange={(e) => handleFileChange(e, setCert)}
               className="w-full border border-gray-300 rounded-lg px-4 py-2"
-              required
             />
           </div>
 
           {/* Key File */}
           <div>
             <label htmlFor="key" className="block text-sm font-medium text-gray-700 mb-1">
-              Private Key
+              Private Key (Optional)
             </label>
             <input
               id="key"
               type="file"
               onChange={(e) => handleFileChange(e, setKey)}
               className="w-full border border-gray-300 rounded-lg px-4 py-2"
-              required
             />
           </div>
 
           {/* TLS Certificate File */}
           <div>
             <label htmlFor="tlsCert" className="block text-sm font-medium text-gray-700 mb-1">
-              TLS Certificate
+              TLS Certificate (Optional)
             </label>
             <input
               id="tlsCert"
               type="file"
               onChange={(e) => handleFileChange(e, setTlsCert)}
               className="w-full border border-gray-300 rounded-lg px-4 py-2"
-              required
             />
           </div>
 

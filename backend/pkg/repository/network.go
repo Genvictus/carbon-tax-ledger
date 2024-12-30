@@ -8,6 +8,10 @@ import (
 
 const (
 	ChannelName string = "mychannel"
+	CryptoPath  string = "../test-network/organizations/peerOrganizations/org1.example.com"
+	CertPath    string = CryptoPath + "/users/minter@org1.example.com/msp/signcerts"
+	KeyPath     string = CryptoPath + "/users/minter@org1.example.com/msp/keystore"
+	TLSCertPath string = CryptoPath + "/peers/peer0.org1.example.com/tls/ca.crt"
 )
 
 var (
