@@ -22,7 +22,7 @@ func MintWalletToken(c *fiber.Ctx) error {
 
 	contract, err := contract.GetContract(c, repository.ChainCodeName["WT"])
 	if err != nil {
-		return handleErrorResponse(c, fiber.ErrBadRequest.Code, "Failed to get contract", err)
+		return handleErrorResponse(c, fiber.ErrUnauthorized.Code, "Failed to get contract", err)
 	}
 
 	_, err = contract.SubmitTransaction("Mint", strconv.Itoa(req.Amount), "")
@@ -42,7 +42,7 @@ func MintWalletToken(c *fiber.Ctx) error {
 func GetWalletToken(c *fiber.Ctx) error {
 	contract, err := contract.GetContract(c, repository.ChainCodeName["WT"])
 	if err != nil {
-		return handleErrorResponse(c, fiber.ErrBadRequest.Code, "Failed to get contract", err)
+		return handleErrorResponse(c, fiber.ErrUnauthorized.Code, "Failed to get contract", err)
 	}
 
 	evaluateResult, err := contract.EvaluateTransaction("ClientAccountBalance")

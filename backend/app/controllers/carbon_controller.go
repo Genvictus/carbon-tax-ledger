@@ -25,12 +25,12 @@ func PayCarbonTax(c *fiber.Ctx) error {
 
 	contract, err := contract.GetContract(c, repository.ChainCodeName["CT"])
 	if err != nil {
-		return handleErrorResponse(c, fiber.ErrBadRequest.Code, "Failed to get contract", err)
+		return handleErrorResponse(c, fiber.ErrUnauthorized.Code, "Failed to get contract", err)
 	}
 
 	_, err = contract.SubmitTransaction("Pay", strconv.Itoa(req.Amount), "")
 	if err != nil {
-		return handleErrorResponse(c, fiber.ErrBadRequest.Code, "Failed to mint token", err)
+		return handleErrorResponse(c, fiber.ErrBadRequest.Code, "Failed to pay carbon tax", err)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -45,7 +45,7 @@ func PayCarbonTax(c *fiber.Ctx) error {
 func GetCarbonToken(c *fiber.Ctx) error {
 	contract, err := contract.GetContract(c, repository.ChainCodeName["CT"])
 	if err != nil {
-		return handleErrorResponse(c, fiber.ErrBadRequest.Code, "Failed to get contract", err)
+		return handleErrorResponse(c, fiber.ErrUnauthorized.Code, "Failed to get contract", err)
 	}
 
 	evaluateResult, err := contract.EvaluateTransaction("ClientAccountBalance")

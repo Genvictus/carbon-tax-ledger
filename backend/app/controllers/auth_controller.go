@@ -56,8 +56,8 @@ func Login(c *fiber.Ctx) error {
 
 // Logout handles user logout and session deletion.
 func Logout(c *fiber.Ctx) error {
-	// Get session ID from cookies
-	sessionID := c.Cookies("sessionID")
+	// Get session ID from header
+	sessionID := c.Get("session-id")
 	if sessionID == "" {
 		return handleErrorResponse(c, fiber.StatusBadRequest, "Session ID is required", fmt.Errorf("missing sessionID"))
 	}

@@ -26,6 +26,6 @@ export const authService = {
   },
 
   async logout() {
-    await api.post('/logout', null, { withCredentials: true });
+    await api.post('/logout', null);
   },
 };
