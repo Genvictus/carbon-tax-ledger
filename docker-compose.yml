@@ -16,3 +16,9 @@ services:
       - PEER_ENDPOINT_ORG1MSP=host.docker.internal:7051
       - PEER_ENDPOINT_ORG2MSP=host.docker.internal:9051
 
+  oracle:
+    build: ./oracle
+    image: carbon-tax-ledger-oracle
+    environment:
+      - PEER_ENDPOINT_ORG1MSP=host.docker.internal:7051
+      - PEER_ENDPOINT_ORG2MSP=host.docker.internal:9051

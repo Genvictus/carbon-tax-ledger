@@ -1,6 +1,6 @@
-# Fiber boilerplate
+# Backend
 
-This is a boilerplate for Fiber web framework.
+Contains logic to handle requests from frontend and interact with blockchain.
 
 ## Quick start
 

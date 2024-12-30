@@ -1,6 +1,6 @@
-# Vite + React + TailwindCSS
+# Frontend
 
-This is a boilerplate for Vite + React + TailwindCSS.
+UI for carbon tax project.
 
 ## Quick start
 
