@@ -5,7 +5,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"os"
-	"path/filepath"
+	"path"
 	"time"
 
 	"github.com/hyperledger/fabric-gateway/pkg/client"
@@ -57,11 +57,10 @@ func GetContract(chaincodeName string) (*client.Contract, error) {
 
 // newGrpcConnection creates a gRPC connection to the Gateway server.
 func newGrpcConnection() (*grpc.ClientConn, error) {
-	tlsCertPath := filepath.Join(repository.CredentialDir, "tlsCert.pem")
 	gatewayPeer := repository.GatewayPeer["Org1MSP"]
 	peerEndpoint := repository.PeerEndpoint["Org1MSP"]
 
-	certificatePEM, err := os.ReadFile(tlsCertPath)
+	certificatePEM, err := os.ReadFile(repository.TLSCertPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read TLS certifcate file: %w", err)
 	}
@@ -85,10 +84,9 @@ func newGrpcConnection() (*grpc.ClientConn, error) {
 
 // newIdentity creates a client identity for this Gateway connection using an X.509 certificate.
 func newIdentity() (*identity.X509Identity, error) {
-	certPath := filepath.Join(repository.CredentialDir, "cert.pem")
 	mspID := "Org1MSP"
 
-	certificatePEM, err := os.ReadFile(certPath)
+	certificatePEM, err := readFirstFile(repository.CertPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read certificate file: %w", err)
 	}
@@ -108,9 +106,7 @@ func newIdentity() (*identity.X509Identity, error) {
 
 // newSign creates a function that generates a digital signature from a message digest using a private key.
 func newSign() (identity.Sign, error) {
-	keyPath := filepath.Join(repository.CredentialDir, "key.pem")
-
-	privateKeyPEM, err := os.ReadFile(keyPath)
+	privateKeyPEM, err := readFirstFile(repository.KeyPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read private key file: %w", err)
 	}
@@ -126,4 +122,18 @@ func newSign() (identity.Sign, error) {
 	}
 
 	return sign, nil
+}
+
+func readFirstFile(dirPath string) ([]byte, error) {
+	dir, err := os.Open(dirPath)
+	if err != nil {
+		return nil, err
+	}
+
+	fileNames, err := dir.Readdirnames(1)
+	if err != nil {
+		return nil, err
+	}
+
+	return os.ReadFile(path.Join(dirPath, fileNames[0]))
 }

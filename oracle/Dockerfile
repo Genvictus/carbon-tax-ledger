@@ -23,6 +23,5 @@ WORKDIR /app
 
 # Copy binary and .env.prod from the builder.
 COPY --from=builder /build/main .
-COPY --from=builder /build/credential ./credential
 
 CMD ["/app/main"]
