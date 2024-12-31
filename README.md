@@ -2,7 +2,7 @@
 A transparent and immutable ledger for carbon tax transactions, built with Hyperledger Fabric.
 
 ## System requirements
-- Linux or WSL
+- WSL
 - Docker
 
 ## Installation
